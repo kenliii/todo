@@ -1,11 +1,7 @@
+from asyncio import Task
 from django.shortcuts import render
-from django.views import View 
-from django.http import HttpResponse 
+from django.views.generic.list import ListView
+from .models import Task
 
-
-
-class Home(View):
-
-
-    def get(self, request):
-        return HttpResponse("todo list")
+class TaskList(ListView):
+    model = Task
