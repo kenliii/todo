@@ -9,9 +9,12 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login
 from .models import Task
+from django.db import transaction
+from .forms import PositionForm
+from django.views import View
 
 class CustomLoginView(LoginView):
-    template_name= 'base/login.html'
+    template_name= 'main_app/login.html'
     fields = '__all__'
     redirect_authenticated_user = True
 
@@ -19,7 +22,7 @@ class CustomLoginView(LoginView):
         return reverse_lazy('tasks')
 
 class RegisterPage(FormView):
-    template_name = 'base/register.html'
+    template_name = 'main_app/register.html'
     form_class = UserCreationForm
     redirect_authenticated_user = True
     success_url = reverse_lazy('tasks')
@@ -77,3 +80,15 @@ class DeleteView(LoginRequiredMixin, DeleteView):
     model = Task
     context_object_name = 'task'
     success_url = reverse_lazy('tasks')
+
+class TaskReorder(View):
+    def post(self, request):
+        form = PositionForm(request.POST)
+
+        if form.is_valid():
+            positionList = form.cleaned_data["position"].split(',')
+
+            with transaction.atomic():
+                self.request.user.set_task_order(positionList)
+
+        return redirect(reverse_lazy('tasks'))
